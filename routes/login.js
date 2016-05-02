@@ -12,28 +12,32 @@ router.get('/', function (req, res) {
 });
 //post
 router.post('/', function (req, res) {
-    authenticate(req.body.user, req.body.pwd, function (err, user) {
-        if (user) {
+    const user = req.body.user;
+    const pwd = req.body.pwd;
+    authenticate(user,pwd)
+        .then(function(user){
             req.session.regenerate(function () {
                 req.session.user = user;
                 req.session.success = `<p>登录成功：${user.name}</p><p><a href="/logout">退出登录</a></p><p>打开<a href="/restricted">/restricted</a></p>`;
                 res.redirect('back');
             });
-        } else {
+        },function(err){
             req.session.error = `<p>登录失败，失败原因：${err.message}</p><p>(测试账号&密码 "admin" and "admin")</p>`;
             res.redirect('/login');
+        })
+        .catch(console.log.bind(console)); ;
+});
+function authenticate(name,pass){
+    return new Promise(function(resolve,reject){
+        var user = users[name];
+        if (!user){
+            reject(new Error('用户名错误，没有此用户'));
+        }
+        if(pass === user.pwd){
+            resolve(user);
+        }else{
+            reject(new Error('密码错误'));
         }
     });
-});
-function authenticate(name, pass, fn) {
-    //console.log('authenticating %s:%s', name, pass);
-    //查询数据库中是否有此user
-    var user = users[name];
-    if (!user) return fn(new Error('用户名错误，没有此用户'));
-    if(pass === user.pwd){
-        return fn(null, user);
-    }else{
-        fn(new Error('密码错误'));
-    }
 }
 module.exports = router;
