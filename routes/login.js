@@ -30,9 +30,8 @@ router.post('/', function (req, res) {
 function authenticate(name,pass){
     return new Promise(function(resolve,reject){
         var user = users[name];
-        if (!user){
+        if (!user)
             reject(new Error('用户名错误，没有此用户'));
-        }
         if(pass === user.pwd){
             resolve(user);
         }else{
